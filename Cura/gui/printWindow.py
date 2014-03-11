@@ -183,6 +183,7 @@ class printWindow(wx.Frame):
 		#self.loadButton = wx.Button(self.panel, -1, 'Load')
 		self.printButton = wx.Button(self.panel, -1, _("Print"))
 		self.pauseButton = wx.Button(self.panel, -1, _("Pause"))
+		self.elevateButton = wx.Button(self.panel, -1, _("Elevate"))
 		self.cancelButton = wx.Button(self.panel, -1, _("Cancel print"))
 		self.machineLogButton = wx.Button(self.panel, -1, _("Error log"))
 		self.progress = wx.Gauge(self.panel, -1)
@@ -191,8 +192,9 @@ class printWindow(wx.Frame):
 		#self.sizer.Add(self.loadButton, pos=(1,1), flag=wx.EXPAND)
 		self.sizer.Add(self.printButton, pos=(2, 1), flag=wx.EXPAND)
 		self.sizer.Add(self.pauseButton, pos=(3, 1), flag=wx.EXPAND)
-		self.sizer.Add(self.cancelButton, pos=(4, 1), flag=wx.EXPAND)
-		self.sizer.Add(self.machineLogButton, pos=(5, 1), flag=wx.EXPAND)
+		self.sizer.Add(self.elevateButton, pos=(4, 1), flag=wx.EXPAND)
+		self.sizer.Add(self.cancelButton, pos=(5, 1), flag=wx.EXPAND)
+		self.sizer.Add(self.machineLogButton, pos=(6, 1), flag=wx.EXPAND)
 		self.sizer.Add(self.progress, pos=(7, 0), span=(1, 7), flag=wx.EXPAND)
 
 		nb = wx.Notebook(self.panel)
@@ -318,6 +320,7 @@ class printWindow(wx.Frame):
 		#self.loadButton.Bind(wx.EVT_BUTTON, self.OnLoad)
 		self.printButton.Bind(wx.EVT_BUTTON, self.OnPrint)
 		self.pauseButton.Bind(wx.EVT_BUTTON, self.OnPause)
+		self.elevateButton.Bind(wx.EVT_BUTTON, self.OnElevate)
 		self.cancelButton.Bind(wx.EVT_BUTTON, self.OnCancel)
 		self.machineLogButton.Bind(wx.EVT_BUTTON, self.OnMachineLog)
 
@@ -429,6 +432,7 @@ class printWindow(wx.Frame):
 			self.pauseButton.SetLabel(_("Resume"))
 		else:
 			self.pauseButton.SetLabel(_("Pause"))
+		self.elevateButton.Enable(self.machineCom is not None and self.machineCom.isPaused())
 		self.cancelButton.Enable(
 			self.machineCom is not None and (self.machineCom.isPrinting() or self.machineCom.isPaused()))
 		self.temperatureSelect.Enable(self.machineCom is not None and self.machineCom.isOperational())
@@ -516,6 +520,9 @@ class printWindow(wx.Frame):
 		else:
 			self.machineCom.setPause(True)
 
+	def OnElevate(self, e):
+		self.machineCom.sendCommand("M600 X0.0 Y0.0 Z180.0 E0 L0")		
+	
 	def OnMachineLog(self, e):
 		LogWindow('\n'.join(self.machineCom.getLog()))
 
