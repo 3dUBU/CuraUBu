@@ -26,7 +26,11 @@ class preferencesDialog(wx.Dialog):
 		configBase.SettingRow(left, 'model_colour', wx.Colour)
 		for i in xrange(1, extruderCount):
 			configBase.SettingRow(left, 'model_colour%d' % (i+1), wx.Colour)
-
+		
+		#Allow the camera to record option
+		configBase.TitleRow(left, _("Camera")) #title for camera option
+		configBase.SettingRow(left, 'camera_enabled') #camera option setting
+			
 		if len(resources.getLanguageOptions()) > 1:
 			configBase.TitleRow(left, _("Language"))
 			configBase.SettingRow(left, 'language', map(lambda n: n[1], resources.getLanguageOptions()))

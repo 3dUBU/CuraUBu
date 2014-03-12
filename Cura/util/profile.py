@@ -343,6 +343,8 @@ setting('filament_physical_density', '1240', float, 'preference', 'hidden').setR
 setting('language', 'English', str, 'preference', 'hidden').setLabel(_('Language'), _('Change the language in which Cura runs. Switching language requires a restart of Cura'))
 setting('active_machine', '0', int, 'preference', 'hidden')
 
+setting('camera_enabled', 'False', bool, 'preference', 'hidden').setLabel(_("Enable camera for monitoring"), _("Allow the camera to record images while printing."))
+
 setting('model_colour', '#FFC924', str, 'preference', 'hidden').setLabel(_('Model colour'))
 setting('model_colour2', '#CB3030', str, 'preference', 'hidden').setLabel(_('Model colour (2)'))
 setting('model_colour3', '#DDD93C', str, 'preference', 'hidden').setLabel(_('Model colour (3)'))
