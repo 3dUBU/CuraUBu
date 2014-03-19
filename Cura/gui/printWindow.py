@@ -151,6 +151,10 @@ class printWindow(wx.Frame):
 		self.termHistoryIdx = 0
 
 		self.cam = None
+		
+		self.height = profile.getMachineSettingFloat('machine_height')
+		self.width = profile.getMachineSettingFloat('machine_width')
+		self.depth = profile.getMachineSettingFloat('machine_depth')
 
 		self.SetSizer(wx.BoxSizer())
 		self.panel = wx.Panel(self)
