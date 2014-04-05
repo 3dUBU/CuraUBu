@@ -439,18 +439,22 @@ class printWindow(wx.Frame):
 		self.connectButton.Enable(self.machineCom is None or self.machineCom.isClosedOrError())
 		#self.loadButton.Enable(self.machineCom == None or not (self.machineCom.isPrinting() or self.machineCom.isPaused()))
 		self.printButton.Enable(self.machineCom is not None and self.machineCom.isOperational() and not (
-		self.machineCom.isPrinting() or self.machineCom.isPaused()))
+		self.machineCom.isPrinting() or self.machineCom.isPaused() or self.machineCom.isElevated()))
 		self.temperatureHeatUp.Enable(self.machineCom is not None and self.machineCom.isOperational() and not (
-		self.machineCom.isPrinting() or self.machineCom.isPaused()))
+		self.machineCom.isPrinting() or self.machineCom.isPaused() or self.machineCom.isElevated())) 
 		self.pauseButton.Enable(
 			self.machineCom is not None and (self.machineCom.isPrinting() or self.machineCom.isPaused()))
-		if self.machineCom is not None and self.machineCom.isPaused():
+		if self.machineCom is not None and (self.machineCom.isPaused() or self.machineCom.isElevated()):
 			self.pauseButton.SetLabel(_("Resume"))
 		else:
 			self.pauseButton.SetLabel(_("Pause"))
-		self.elevateButton.Enable(self.machineCom is not None and self.machineCom.isPaused())
+		self.elevateButton.Enable(self.machineCom is not None and (self.machineCom.isPaused() or self.machineCom.isElevated()))
+		if self.machineCom is not None and self.machineCom.isElevated():
+			self.elevateButton.SetLabel(_("Bring Down"))
+		else:
+			self.elevateButton.SetLabel(_("Elevate"))
 		self.cancelButton.Enable(
-			self.machineCom is not None and (self.machineCom.isPrinting() or self.machineCom.isPaused()))
+			self.machineCom is not None and (self.machineCom.isPrinting() or self.machineCom.isPaused() or self.machineCom.isElevated()))
 		self.temperatureSelect.Enable(self.machineCom is not None and self.machineCom.isOperational())
 		self.bedTemperatureSelect.Enable(self.machineCom is not None and self.machineCom.isOperational())
 		self.directControlPanel.Enable(
@@ -532,13 +536,109 @@ class printWindow(wx.Frame):
 
 	def OnPause(self, e):
 		if self.machineCom.isPaused():
+			
 			self.machineCom.setPause(False)
 		else:
 			self.machineCom.setPause(True)
 
 	def OnElevate(self, e):
-		self.machineCom.sendCommand("M600 X0.0 Y0.0 Z180.0 E0 L0")		
+		#with M600 command
+		#self.termLog.AppendText('>Moving to X%s, Z%s\n' % (self.width/2, self.height))
+		#self.machineCom.sendCommand("G92 E0")
+		#self.machineCom.sendCommand("G1 E-2 F120")
+		#self.machineCom.sendCommand("M600 X80 Y%f Z%f E0 L2" % (self.depth/2, self.height))
+		
+		#reading term log //works except the command
+		#self.machineCom.sendCommand('M114')
+		#getPositions()
+		#nLines = self.termLog.GetNumberOfLines()
+		#line = self.termLog.GetLineText(nLines - 2)
+		#pos = calculatePositions(line)
+		#self.termLog.AppendText('>>%s--\n' % line)
+		
+		#reading gcodeList
+		if self.machineCom.isElevated():			
+			p = self.machineCom.getPrintPos()
+			i = 1
+			while "X" and "Y" not in self.gcodeList[p-i]:
+				i += 1
+			self.previousPos = self.calculateXYPositions(self.gcodeList[p-i])
+			i = 1
+			while "Z" not in self.gcodeList[p-i]:
+				i += 1
+			self.previousPos['Z'] = self.calculateZPosition(self.gcodeList[p-i])
+			if -1 not in self.previousPos.values():
+				self.termLog.AppendText('>>Previous position: %s\n' % self.previousPos)
+				self.machineCom.setElevated(False, self.previousPos)				
+			else:
+				self.termLog.AppendText('>>Previous position not correct\n')
+				return
+		else:
+			self.elevatePos = {'X': self.width/2, 'Y': self.depth/2, 'Z': self.height}
+			if -1 not in self.elevatePos.values():
+				self.termLog.AppendText('>>Elevating to x%s, y%s, z%s\n' % (self.elevatePos['X'], self.elevatePos['Y'], self.elevatePos['Z']))
+				self.machineCom.setElevated(True, self.elevatePos)
+			else:
+				self.termLog.AppendText('>>Elevating position not correct\n')
+				return
+
 	
+	# def getPositions(self):
+		# self.machineCom.sendCommand('M114')
+	
+	def validatePos(self, pos):
+		pattern = '^[0-9]+([.][0-9]{1,})?$'
+		if re.match(pattern, str(pos)):
+			return True
+		else:
+			return False
+			
+	def getPosition(self, line):
+		self.termLog.AppendText('>>get pos\n')
+		p = line[1:]
+		self.termLog.AppendText('>>p: %s\n' % p)
+		if self.validatePos(p):
+			self.termLog.AppendText('>>vale\n')
+			return p
+		else:
+			self.termLog.AppendText('>>no vale\n')
+			return -1
+	
+	def calculateXYPositions(self, line):
+		pos = {"X" : -1, "Y" : -1}
+		aux = line.split(" ")
+		for val in xrange(len(aux)):
+			if "X" in aux[val]:
+				#pX = aux[val][1:]
+				#self.termLog.AppendText('>>px--%s--\n' % pX)
+				#if self.validatePos(pX):
+				self.termLog.AppendText('>>px\n')
+				pos['X'] = self.getPosition(aux[val])
+			elif "Y" in aux[val]:
+				pos['Y'] = self.getPosition(aux[val])
+		return pos
+		
+	def calculateZPosition(self, line):
+		z = -1
+		aux = line.split(" ")
+		for val in xrange(len(aux)):
+			if "Z" in aux[val]:
+				z = self.getPosition(aux[val])
+		return z
+					
+	# def calculatePositions(line):
+		# pos  = []
+		# aux = line.split(":")
+		# for val in xrange(1,4):
+			# num = aux[val][0:len(aux[val])-1]
+			#if val is 1:
+				# pos.append(num)
+			#if val is 1:
+				# pos.append(num)
+			#if val is 1:
+				# pos.append(num)
+		# return pos
+		
 	def OnMachineLog(self, e):
 		LogWindow('\n'.join(self.machineCom.getLog()))
 

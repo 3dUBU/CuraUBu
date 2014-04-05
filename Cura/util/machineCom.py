@@ -154,6 +154,7 @@ class MachineCom(object):
 	STATE_CLOSED = 8
 	STATE_ERROR = 9
 	STATE_CLOSED_WITH_ERROR = 10
+	STATE_ELEVATED = 11
 	
 	def __init__(self, port = None, baudrate = None, callbackObject = None):
 		if port is None:
@@ -222,6 +223,8 @@ class MachineCom(object):
 			return "Printing"
 		if self._state == self.STATE_PAUSED:
 			return "Paused"
+		if self._state == self.STATE_ELEVATED:
+			return "Elevated"
 		if self._state == self.STATE_CLOSED:
 			return "Closed"
 		if self._state == self.STATE_ERROR:
@@ -245,13 +248,16 @@ class MachineCom(object):
 		return self._state == self.STATE_ERROR or self._state == self.STATE_CLOSED_WITH_ERROR
 	
 	def isOperational(self):
-		return self._state == self.STATE_OPERATIONAL or self._state == self.STATE_PRINTING or self._state == self.STATE_PAUSED
+		return self._state == self.STATE_OPERATIONAL or self._state == self.STATE_PRINTING or self._state == self.STATE_PAUSED or self._state == self.STATE_ELEVATED
 	
 	def isPrinting(self):
 		return self._state == self.STATE_PRINTING
 	
 	def isPaused(self):
 		return self._state == self.STATE_PAUSED
+	
+	def isElevated(self):
+		return self._state == self.STATE_ELEVATED
 
 	def getPrintPos(self):
 		return self._gcodePos
@@ -619,6 +625,15 @@ class MachineCom(object):
 				self._sendNext()
 		if pause and self.isPrinting():
 			self._changeState(self.STATE_PAUSED)
+	
+	def setElevated(self, elevate, pos):
+		cmd = "G0 X%s Y%s Z%s" % (pos['X'], pos['Y'], pos['Z'])
+		if not elevate and self.isElevated():
+			self._sendCommand(cmd)
+			self._changeState(self.STATE_PAUSED)
+		if elevate and self.isPaused():
+			self._sendCommand(cmd)
+			self._changeState(self.STATE_ELEVATED)			
 	
 	def setFeedrateModifier(self, type, value):
 		self._feedRateModifier[type] = value
