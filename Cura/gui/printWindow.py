@@ -594,14 +594,10 @@ class printWindow(wx.Frame):
 			return False
 			
 	def getPosition(self, line):
-		self.termLog.AppendText('>>get pos\n')
 		p = line[1:]
-		self.termLog.AppendText('>>p: %s\n' % p)
 		if self.validatePos(p):
-			self.termLog.AppendText('>>vale\n')
 			return p
 		else:
-			self.termLog.AppendText('>>no vale\n')
 			return -1
 	
 	def calculateXYPositions(self, line):
@@ -609,10 +605,6 @@ class printWindow(wx.Frame):
 		aux = line.split(" ")
 		for val in xrange(len(aux)):
 			if "X" in aux[val]:
-				#pX = aux[val][1:]
-				#self.termLog.AppendText('>>px--%s--\n' % pX)
-				#if self.validatePos(pX):
-				self.termLog.AppendText('>>px\n')
 				pos['X'] = self.getPosition(aux[val])
 			elif "Y" in aux[val]:
 				pos['Y'] = self.getPosition(aux[val])
