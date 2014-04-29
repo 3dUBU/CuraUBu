@@ -275,10 +275,16 @@ class printWindow(wx.Frame):
 		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (3*self.width/4, self.depth/4)], 'print-calibrate-center-UR.png'), pos=(2, 13))
 		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (3*self.width/4, 3*self.depth/4)], 'print-calibrate-center-DR.png'), pos=(4, 13))
 
-		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E2 F120'], 'extrude.png', size=(60, 20)), pos=(8, 6),
-			span=(1, 3), flag=wx.EXPAND)
-		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E-2 F120'], 'retract.png', size=(60, 20)), pos=(9, 6),
-			span=(1, 3), flag=wx.EXPAND)
+		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E2 F120'], 'extrude.png', size=(60, 20)), pos=(8, 8))
+		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E5 F120'], 'extrude5.png'), pos=(8, 9))
+		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E10 F120'], 'extrude10.png'), pos=(8, 10))
+		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E20 F120'], 'extrude20.png'), pos=(8, 11))
+			
+		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E-2 F120'], 'retract.png', size=(60, 20)), pos=(9, 8))
+		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E-5 F120'], 'retract5.png'), pos=(9, 9))
+		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E-10 F120'], 'retract10.png'), pos=(9, 10))
+		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E-20 F120'], 'retract20.png'), pos=(9, 11))
+
 
 		nb.AddPage(self.directControlPanel, _("Jog"))
 
