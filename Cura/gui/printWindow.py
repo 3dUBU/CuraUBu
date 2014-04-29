@@ -263,17 +263,17 @@ class printWindow(wx.Frame):
 		sizer.Add(PrintCommandButton(self, ['G91', 'G1 Z-1 F200', 'G90'], 'print-move-z-1.png'), pos=(5, 8))
 		sizer.Add(PrintCommandButton(self, ['G91', 'G1 Z-10 F200', 'G90'], 'print-move-z-10.png'), pos=(6, 8))
 		#Calibration buttons
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (0, 20)], 'print-calibrateUL.png'), pos=(1, 10))
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (0, self.depth - 20)], 'print-calibrateDL.png'), pos=(5, 10))
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width - 10, 20)], 'print-calibrateUR.png'), pos=(1, 14))
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width - 10, self.depth - 20)], 'print-calibrateDR.png'), pos=(5, 14))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width - 10, 10)], 'print-calibrateUL.png'), pos=(1, 9))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width - 10, self.depth - 10)], 'print-calibrateDL.png'), pos=(5, 9))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (10, 10)], 'print-calibrateUR.png'), pos=(1, 13))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (10, self.depth - 10)], 'print-calibrateDR.png'), pos=(5, 13))
 		
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width/2, self.depth/2)], 'print-calibrate-center.png'), pos=(3, 12))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width/2, self.depth/2)], 'print-calibrate-center.png'), pos=(3, 11))
 		
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width/4, self.depth/4)], 'print-calibrate-center-UL.png'), pos=(2, 11))
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width/4, 3*self.depth/4)], 'print-calibrate-center-DL.png'), pos=(4, 11))
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (3*self.width/4, self.depth/4)], 'print-calibrate-center-UR.png'), pos=(2, 13))
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (3*self.width/4, 3*self.depth/4)], 'print-calibrate-center-DR.png'), pos=(4, 13))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (3*self.width/4, self.depth/4)], 'print-calibrate-center-UL.png'), pos=(2, 10))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (3*self.width/4, 3*self.depth/4)], 'print-calibrate-center-DL.png'), pos=(4, 10))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width/4, self.depth/4)], 'print-calibrate-center-UR.png'), pos=(2, 12))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width/4, 3*self.depth/4)], 'print-calibrate-center-DR.png'), pos=(4, 12))
 
 		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E2 F120'], 'extrude.png', size=(60, 20)), pos=(8, 8))
 		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E5 F120'], 'extrude5.png'), pos=(8, 9))
