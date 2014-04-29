@@ -207,6 +207,9 @@ class MachineCom(object):
 		return self._state
 	
 	def getStateString(self):
+		"""
+		Returns the string for the current state of the machine
+		"""
 		if self._state == self.STATE_NONE:
 			return "Offline"
 		if self._state == self.STATE_OPEN_SERIAL:
@@ -248,6 +251,9 @@ class MachineCom(object):
 		return self._state == self.STATE_ERROR or self._state == self.STATE_CLOSED_WITH_ERROR
 	
 	def isOperational(self):
+		"""
+		Returns true if the state of the machine is "Operational", false if not
+		"""
 		return self._state == self.STATE_OPERATIONAL or self._state == self.STATE_PRINTING or self._state == self.STATE_PAUSED or self._state == self.STATE_ELEVATED
 	
 	def isPrinting(self):
@@ -257,6 +263,9 @@ class MachineCom(object):
 		return self._state == self.STATE_PAUSED
 	
 	def isElevated(self):
+		"""
+		Returns true if the state of the machine is "Elevated", false if not
+		"""
 		return self._state == self.STATE_ELEVATED
 
 	def getPrintPos(self):
@@ -627,7 +636,10 @@ class MachineCom(object):
 			self._changeState(self.STATE_PAUSED)
 	
 	def setElevated(self, elevate, pos):
-		cmd = "G0 X%s Y%s Z%s" % (pos['X'], pos['Y'], pos['Z'])
+		"""
+		Moves the axises to the received possition and changes the state of the machine to the new state
+		"""
+		cmd = "G0 X%s Y%s Z%s E%s" % (pos['X'], pos['Y'], pos['Z'], pos['E'])
 		if not elevate and self.isElevated():
 			self._sendCommand(cmd)
 			self._changeState(self.STATE_PAUSED)

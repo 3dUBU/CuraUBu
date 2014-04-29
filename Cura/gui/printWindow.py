@@ -285,7 +285,6 @@ class printWindow(wx.Frame):
 		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E-10 F120'], 'retract10.png'), pos=(9, 10))
 		sizer.Add(PrintCommandButton(self, ['G92 E0', 'G1 E-20 F120'], 'retract20.png'), pos=(9, 11))
 
-
 		nb.AddPage(self.directControlPanel, _("Jog"))
 
 		self.speedPanel = wx.Panel(nb)
@@ -442,6 +441,9 @@ class printWindow(wx.Frame):
 		self.cam.openPropertyPage(e.GetEventObject().index)
 
 	def UpdateButtonStates(self):
+		"""
+		Updates the states of the buttons according to the current state of the machine
+		"""
 		self.connectButton.Enable(self.machineCom is None or self.machineCom.isClosedOrError())
 		#self.loadButton.Enable(self.machineCom == None or not (self.machineCom.isPrinting() or self.machineCom.isPaused()))
 		self.printButton.Enable(self.machineCom is not None and self.machineCom.isOperational() and not (
@@ -542,12 +544,15 @@ class printWindow(wx.Frame):
 
 	def OnPause(self, e):
 		if self.machineCom.isPaused():
-			
 			self.machineCom.setPause(False)
 		else:
 			self.machineCom.setPause(True)
 
 	def OnElevate(self, e):
+		"""
+		Calculates the possition where the bed and the nozzle need to be elevated if the printing is paused and moves there
+		Calculates the possition where the bed and the nozzel should be moved if the status is elevated and moves there
+		"""		
 		#with M600 command
 		#self.termLog.AppendText('>Moving to X%s, Z%s\n' % (self.width/2, self.height))
 		#self.machineCom.sendCommand("G92 E0")
@@ -563,50 +568,100 @@ class printWindow(wx.Frame):
 		#self.termLog.AppendText('>>%s--\n' % line)
 		
 		#reading gcodeList
-		if self.machineCom.isElevated():			
-			p = self.machineCom.getPrintPos()
-			i = 1
-			while "X" and "Y" not in self.gcodeList[p-i]:
-				i += 1
-			self.previousPos = self.calculateXYPositions(self.gcodeList[p-i])
-			i = 1
-			while "Z" not in self.gcodeList[p-i]:
-				i += 1
-			self.previousPos['Z'] = self.calculateZPosition(self.gcodeList[p-i])
+		p = self.machineCom.getPrintPos()
+		if self.machineCom.isElevated():	
+			self.previousPos = {}
+			xy = self.findLine(p, "X", "Y")
+			self.previousPos['X'] = self.calculateAxisPosition(self.gcodeList[p-xy], "X")
+			self.previousPos['Y'] = self.calculateAxisPosition(self.gcodeList[p-xy], "Y")
+			z = self.findLine(p, "Z")
+			self.previousPos['Z'] = self.calculateAxisPosition(self.gcodeList[p-z], "Z")
 			if -1 not in self.previousPos.values():
+				e = self.findLine(p, "E")
+				ePos = self.calculateAxisPosition(self.gcodeList[p-e], "E")
+				self.previousPos['E'] = ePos
 				self.termLog.AppendText('>>Previous position: %s\n' % self.previousPos)
-				self.machineCom.setElevated(False, self.previousPos)				
+				self.machineCom.setElevated(False, self.previousPos)
+				self.machineCom.setPause(False)				
 			else:
 				self.termLog.AppendText('>>Previous position not correct\n')
 				return
 		else:
-			self.elevatePos = {'X': self.width/2, 'Y': self.depth/2, 'Z': self.height}
+			z = self.findLine(p, "Z")
+			zPos = self.calculateAxisPosition(self.gcodeList[p-z], "Z")
+			zOpt = self.optHeight(zPos)
+			self.elevatePos = {'X': self.width/2, 'Y': self.depth/2, 'Z': zOpt}
 			if -1 not in self.elevatePos.values():
-				self.termLog.AppendText('>>Elevating to x%s, y%s, z%s\n' % (self.elevatePos['X'], self.elevatePos['Y'], self.elevatePos['Z']))
+				e = self.findLine(p, "E")
+				ePos = self.calculateAxisPosition(self.gcodeList[p-e], "E")
+				self.elevatePos['E'] = ePos - 2
+				self.termLog.AppendText('>>Elevating to X%s, Y%s, Z%s E%s\n' % (self.elevatePos['X'], self.elevatePos['Y'], self.elevatePos['Z'], self.elevatePos['E']))
 				self.machineCom.setElevated(True, self.elevatePos)
 			else:
 				self.termLog.AppendText('>>Elevating position not correct\n')
 				return
 
-	
-	# def getPositions(self):
-		# self.machineCom.sendCommand('M114')
-	
-	def validatePos(self, pos):
-		pattern = '^[0-9]+([.][0-9]{1,})?$'
-		if re.match(pattern, str(pos)):
-			return True
-		else:
-			return False
-			
+	def findLine(self, p, letter1, letter2 = "G"):
+		"""
+		Finds the last line where both given letters appear
+		"""
+		i = 1
+		self.termLog.AppendText('>>l1:%s-\n' % letter1)
+		self.termLog.AppendText('>>l2:%s-\n' % letter2)
+		while letter1 not in self.gcodeList[p-i] or letter2 not in self.gcodeList[p-i]:
+			i += 1
+		self.termLog.AppendText('>>i:%s-\n' % i)
+		return i
+		
+	def calculateAxisPosition(self, line, axis):
+		"""
+		Calculate the possition from the axis received in the line received
+		"""
+		self.termLog.AppendText('>>axis:%s-\n' % axis)
+		pos = -1
+		component = line.split(" ")
+		for val in xrange(len(component)):
+			if axis in component[val]:
+				pos = self.getPosition(component[val])
+		self.termLog.AppendText('>>pos:%s-\n' % pos)
+		return float(pos)
+
 	def getPosition(self, line):
+		"""
+		Gets the value of an axis possition given the substring of an axis
+		"""
 		p = line[1:]
 		if self.validatePos(p):
 			return p
 		else:
 			return -1
+			
+	def validatePos(self, pos):
+		"""
+		Checks that the value of the possition of an axis is in the correct format
+		"""
+		pattern = '^[0-9]+([.][0-9]{1,})?$'
+		if re.match(pattern, str(pos)):
+			return True
+		else:
+			return False
+		
+	def optHeight(self, h):
+		"""
+		Returns the correct height where it should move given the current one
+		"""
+		opt = float(h) + 5
+		if opt < self.height/2:
+			return self.height/2
+		elif opt > self.height:
+			return self.height
+		else:
+			return opt
 	
 	def calculateXYPositions(self, line):
+		"""
+		Calculates the values of X and Y axis given the last GCode command sent where they appear
+		"""
 		pos = {"X" : -1, "Y" : -1}
 		aux = line.split(" ")
 		for val in xrange(len(aux)):
@@ -617,25 +672,15 @@ class printWindow(wx.Frame):
 		return pos
 		
 	def calculateZPosition(self, line):
+		"""
+		Calculates the value of the Z axis given the last GCode command sent where it appears
+		"""
 		z = -1
 		aux = line.split(" ")
 		for val in xrange(len(aux)):
 			if "Z" in aux[val]:
 				z = self.getPosition(aux[val])
 		return z
-					
-	# def calculatePositions(line):
-		# pos  = []
-		# aux = line.split(":")
-		# for val in xrange(1,4):
-			# num = aux[val][0:len(aux[val])-1]
-			#if val is 1:
-				# pos.append(num)
-			#if val is 1:
-				# pos.append(num)
-			#if val is 1:
-				# pos.append(num)
-		# return pos
 		
 	def OnMachineLog(self, e):
 		LogWindow('\n'.join(self.machineCom.getLog()))
