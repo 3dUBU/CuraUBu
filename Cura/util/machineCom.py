@@ -639,11 +639,15 @@ class MachineCom(object):
 		"""
 		Moves the axises to the received possition and changes the state of the machine to the new state
 		"""
-		cmd = "G0 X%s Y%s Z%s E%s" % (pos['X'], pos['Y'], pos['Z'], pos['E'])
+		self._sendCommand("G92 E%s" % pos['E'])
+		cmd = "G0 X%s Y%s Z%s F1200" % (pos['X'], pos['Y'], pos['Z'])
 		if not elevate and self.isElevated():
 			self._sendCommand(cmd)
+			self._sendCommand("G0 E%s F2400" % pos['E'])
 			self._changeState(self.STATE_PAUSED)
 		if elevate and self.isPaused():
+			e = float(pos['E']) - 4
+			self._sendCommand("G0 E%s F2400" % e)
 			self._sendCommand(cmd)
 			self._changeState(self.STATE_ELEVATED)			
 	
