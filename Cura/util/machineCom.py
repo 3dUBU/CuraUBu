@@ -327,14 +327,14 @@ class MachineCom(object):
 				if self._baudrate == 0:
 					self._serial = serial.Serial(str(self._port), 115200, timeout=0.1, writeTimeout=10000)
 				else:
-					self._serial = serial.Serial(str(self._port), self._baudrate, timeout=2, writeTimeout=10000)
+					self._serial = serial.Serial(str(self._port), self._baudrate, timeout=2, writeTimeout=100000)
 			except:
 				self._log("Unexpected error while connecting to serial port: %s %s" % (self._port, getExceptionString()))
 		if self._serial is None:
 			baudrate = self._baudrate
 			if baudrate == 0:
 				baudrate = self._baudrateDetectList.pop(0)
-			self._serial = serial.Serial(self._serialDetectList.pop(0), baudrate, timeout=0.1, writeTimeout=10000)
+			self._serial = serial.Serial(self._serialDetectList.pop(0), baudrate, timeout=0.1, writeTimeout=100000)
 		else:
 			self._log("Connected to: %s, starting monitor" % (self._serial))
 			if self._baudrate == 0:
@@ -567,6 +567,15 @@ class MachineCom(object):
 			try:
 				time.sleep(0.5)
 				self._serial.write(cmd + '\n')
+			except serial.SerialTimeoutException:
+				self._log("Serial timeout while writing to serial port, trying again.")
+				try:
+					time.sleep(0.5)
+					self._serial.write(cmd + '\n')
+				except:
+					self._log("Unexpected error while writing serial port: %s" % (getExceptionString()))
+					self._errorValue = getExceptionString()
+					self.close(True)
 			except:
 				self._log("Unexpected error while writing serial port: %s" % (getExceptionString()))
 				self._errorValue = getExceptionString()

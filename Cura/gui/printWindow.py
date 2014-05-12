@@ -635,14 +635,16 @@ class printWindow(wx.Frame):
 		"""
 		Returns the correct height where it should move given the current one
 		"""
-		opt = float(h) + 5
-		if opt < self.height/2:
+		opt = float(h) + 10
+		if opt < self.height/4:
+			return self.height/4
+		elif opt < self.height/2:
 			return self.height/2
 		elif opt > self.height:
 			return self.height
 		else:
 			return opt
-		
+
 	def OnMachineLog(self, e):
 		LogWindow('\n'.join(self.machineCom.getLog()))
 
