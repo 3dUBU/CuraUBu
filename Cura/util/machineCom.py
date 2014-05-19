@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-__copyright__ = "Copyright (C) 2013 David Braam - Released under terms of the AGPLv3 License"
+__copyright__ = "Copyright (C) 2013 David Braam / Alejandro Fernandez - Released under terms of the AGPLv3 License"
 
 import os
 import glob
@@ -143,6 +143,9 @@ class MachineComPrintCallback(object):
 		pass
 
 class MachineCom(object):
+	"""
+	Computer - Machine communication handler
+	"""
 	STATE_NONE = 0
 	STATE_OPEN_SERIAL = 1
 	STATE_DETECT_SERIAL = 2

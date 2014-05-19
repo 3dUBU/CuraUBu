@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-__copyright__ = "Copyright (C) 2013 David Braam - Released under terms of the AGPLv3 License"
+__copyright__ = "Copyright (C) 2013 David Braam / Alejandro Fernandez - Released under terms of the AGPLv3 License"
 
 import threading
 import re
@@ -133,7 +133,7 @@ class printWindow(wx.Frame):
 
 	def __init__(self):
 		"""
-		printWindow constructor
+		Creates the window which controls the printing process
 		"""
 		super(printWindow, self).__init__(None, -1, title=_("Printing"))
 		t = time.time()
@@ -266,10 +266,10 @@ class printWindow(wx.Frame):
 		sizer.Add(PrintCommandButton(self, ['G91', 'G1 Z-1 F200', 'G90'], 'print-move-z-1.png'), pos=(5, 8))
 		sizer.Add(PrintCommandButton(self, ['G91', 'G1 Z-10 F200', 'G90'], 'print-move-z-10.png'), pos=(6, 8))
 		#Calibration buttons
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width - 10, 10)], 'print-calibrateUL.png'), pos=(1, 9))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width - 10, 20)], 'print-calibrateUL.png'), pos=(1, 9))
 		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width - 10, self.depth - 10)], 'print-calibrateDL.png'), pos=(5, 9))
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (10, 10)], 'print-calibrateUR.png'), pos=(1, 13))
-		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (10, self.depth - 10)], 'print-calibrateDR.png'), pos=(5, 13))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (20, 20)], 'print-calibrateUR.png'), pos=(1, 13))
+		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (20, self.depth - 10)], 'print-calibrateDR.png'), pos=(5, 13))
 		
 		sizer.Add(PrintCommandButton(self, ['G1 X%s Y%s F6000' % (self.width/2, self.depth/2)], 'print-calibrate-center.png'), pos=(3, 11))
 		
@@ -635,11 +635,13 @@ class printWindow(wx.Frame):
 		"""
 		Returns the correct height where it should move given the current one
 		"""
-		opt = float(h) + 10
+		opt = float(h) + 20
 		if opt < self.height/4:
 			return self.height/4
 		elif opt < self.height/2:
 			return self.height/2
+		elif opt < self.height * 3 / 4:
+			return self.height * 3 / 4
 		elif opt > self.height:
 			return self.height
 		else:
