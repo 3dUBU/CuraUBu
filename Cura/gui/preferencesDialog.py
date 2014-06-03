@@ -11,6 +11,9 @@ from Cura.util import resources
 
 class preferencesDialog(wx.Dialog):
 	def __init__(self, parent):
+		"""
+		Creates the window for changing the preferences
+		"""
 		super(preferencesDialog, self).__init__(None, title="Preferences")
 
 		wx.EVT_CLOSE(self, self.OnClose)
@@ -58,6 +61,9 @@ class preferencesDialog(wx.Dialog):
 		self.Fit()
 
 	def OnClose(self, e):
+		"""
+		Closes the preference Window
+		"""
 		#self.parent.reloadSettingPanels()
 		self.Destroy()
 
